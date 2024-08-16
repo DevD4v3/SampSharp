@@ -5,6 +5,10 @@
     <Title>SampSharp Server Core</Title>
     <Description>The core library of SampSharp which manages the communication with the SA-MP server.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageId>SampSharp.Core</PackageId>
+    <Product>$(PackageId)</Product>
+    <Version>0.10.1</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
