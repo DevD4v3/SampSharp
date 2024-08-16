@@ -2,8 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <Title>SampSharp Entities</Title>
     <Description>An EntityComponentSystem framework for SampSharp.</Description>
+    <PackageId>SampSharp.CTF.Entities</PackageId>
+    <Product>$(PackageId)</Product>
+    <Version>0.10.3</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
