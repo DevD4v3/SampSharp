@@ -19,4 +19,8 @@
     <ProjectReference Include="..\SampSharp.Core\SampSharp.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include=".\README.md" Pack="True" PackagePath="" />
+  </ItemGroup>
+
 </Project>
