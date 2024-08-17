@@ -7,7 +7,7 @@
     <Description>An EntityComponentSystem framework for SampSharp.</Description>
     <PackageId>SampSharp.CTF.Entities</PackageId>
     <Product>$(PackageId)</Product>
-    <Version>0.10.3</Version>
+    <Version>0.10.4</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
