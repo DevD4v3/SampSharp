@@ -24,6 +24,7 @@ namespace SampSharp.Entities.SAMP
         // ReSharper disable once UnusedMember.Local
         private void OnPlayerDisconnect(VisibleDialog player, DisconnectReason _)
         {
+            player.ResponseReceived = true;
             player.Handler(new DialogResult(DialogResponse.Disconnected, 0, null));
         }
 
@@ -37,6 +38,7 @@ namespace SampSharp.Entities.SAMP
             player.ResponseReceived = true;
             player.Handler(new DialogResult(
                 response == 1 ? DialogResponse.LeftButton : DialogResponse.RightButtonOrCancel, listItem, inputText));
+            player.Destroy();
         }
     }
 }
