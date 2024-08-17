@@ -9,6 +9,7 @@
     <Product>$(PackageId)</Product>
     <Version>0.10.4</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
