@@ -30,7 +30,7 @@ namespace SampSharp.Entities.SAMP.Commands
         private readonly IEntityManager _entityManager;
         private readonly int _prefixParameters;
 
-        private readonly Dictionary<string, List<CommandData>> _commands = new Dictionary<string, List<CommandData>>();
+        private readonly Dictionary<string, List<CommandData>> _commands = new(StringComparer.OrdinalIgnoreCase);
 
         /// <inheritdoc />
         protected CommandServiceBase(IEntityManager entityManager, int prefixParameters)
