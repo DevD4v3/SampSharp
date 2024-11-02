@@ -48,7 +48,7 @@ namespace SampSharp.Entities
                 Invoke = () => action(_serviceProvider),
                 IsActive = true,
                 IntervalTicks = interval.Ticks,
-                NextTick = Stopwatch.GetTimestamp() + interval.Ticks
+                NextTick = DateTime.UtcNow.Ticks + interval.Ticks
             };
 
             _timers.Add(invoker);
@@ -59,7 +59,7 @@ namespace SampSharp.Entities
         [Event]
         internal void OnGameModeInit()
         {
-            _lastTick = Stopwatch.GetTimestamp();
+            _lastTick = DateTime.UtcNow.Ticks;
 
             CreateTimersFromAssemblies(_lastTick);
 
@@ -72,7 +72,7 @@ namespace SampSharp.Entities
             if (!_didInitialize || _timers.Count == 0)
                 return;
 
-            var timestamp = Stopwatch.GetTimestamp();
+            var timestamp = DateTime.UtcNow.Ticks;
             
             // Don't user foreach for performance reasons
             // ReSharper disable once ForCanBeConvertedToForeach
