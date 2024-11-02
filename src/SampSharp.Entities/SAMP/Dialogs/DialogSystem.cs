@@ -39,6 +39,10 @@ namespace SampSharp.Entities.SAMP
             player.ResponseReceived = true;
             player.Handler(new DialogResult(
                 response == 1 ? DialogResponse.LeftButton : DialogResponse.RightButtonOrCancel, listItem, inputText));
+
+            if (!player.IsComponentAlive)
+                return;
+
             player.Destroy();
         }
     }
