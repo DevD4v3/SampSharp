@@ -760,6 +760,12 @@ namespace SampSharp.Entities.SAMP
         }
 
         [NativeMethod]
+        public virtual void HideGameTextForPlayer(int style)
+        {
+            throw new NativeNotImplementedException();
+        }
+
+        [NativeMethod]
         public virtual bool Kick()
         {
             throw new NativeNotImplementedException();
