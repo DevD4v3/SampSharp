@@ -8,14 +8,16 @@ namespace SampSharp.Entities.SAMP.Commands
     public class PlayerCommandProcessingMiddleware
     {
         private readonly EventDelegate _next;
+        private readonly IEntityManager _entityManager;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayerCommandProcessingMiddleware" /> class.
         /// </summary>
         /// <param name="next">The next middleware handler.</param>
-        public PlayerCommandProcessingMiddleware(EventDelegate next)
+        public PlayerCommandProcessingMiddleware(EventDelegate next, IEntityManager entityManager)
         {
             _next = next;
+            _entityManager = entityManager;
         }
         
         /// <summary>
@@ -30,7 +32,17 @@ namespace SampSharp.Entities.SAMP.Commands
 
             if (context.Arguments[0] is EntityId player &&
                 context.Arguments[1] is string text)
-                return commandService.Invoke(context.EventServices, player, text);
+            {
+                bool invokeResult = commandService.Invoke(context.EventServices, player, text);
+                if (!invokeResult)
+                {
+                    _entityManager.GetComponent<Player>(player)
+                        ?.SendClientMessage(Color.Red, "Command not found. To see all available commands, use /cmds");
+                    // Returning true informs the server that the command has been processed.
+                    return true;
+                }
+                return invokeResult;
+            }
 
             CoreLog.Log(CoreLogLevel.Error, "Invalid command middleware input argument types!");
             return null;
