@@ -78,6 +78,7 @@ namespace SampSharp.Entities.SAMP.Commands
             var name = index < 0 ? inputText : inputText.Substring(0, index);
             var result = false;
             var invalidParameters = false;
+            ICommandParameterParser parameterParser = null;
 
             // TODO: Commands in groups would have spaces in them, the logic above would not work.
 
@@ -110,6 +111,7 @@ namespace SampSharp.Entities.SAMP.Commands
                     if (parameter.IsRequired)
                     {
                         accept = false;
+                        parameterParser = parameter.Parser;
                         break;
                     }
 
@@ -145,6 +147,12 @@ namespace SampSharp.Entities.SAMP.Commands
 
             if (!invalidParameters)
                 return InvokeResult.CommandNotFound;
+
+            if (parameterParser is PlayerParser parser && parser.IsInvalidPlayerId)
+            {
+                var errorMessage = $"{Color.Red}The player ID entered is invalid";
+                return new InvokeResult(InvokeResponse.InvalidArguments, errorMessage);
+            }
 
             var usageMessage = GetUsageMessage(commands.Select(c => c.Info).ToArray());
             return new InvokeResult(InvokeResponse.InvalidArguments, usageMessage);

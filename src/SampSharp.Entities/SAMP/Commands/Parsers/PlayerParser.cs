@@ -24,10 +24,15 @@ namespace SampSharp.Entities.SAMP.Commands.Parsers
     public class PlayerParser : ICommandParameterParser
     {
         private readonly WordParser _wordParser = new WordParser();
+        /// <summary>
+        /// Checks if the player id is invalid or not.
+        /// </summary>
+        public bool IsInvalidPlayerId { get; set; }
 
         /// <inheritdoc />
         public bool TryParse(IServiceProvider services, ref string inputText, out object result)
         {
+            IsInvalidPlayerId = false;
             if (!_wordParser.TryParse(services, ref inputText, out var subResult) ||
                 !(subResult is string word))
             {
@@ -67,6 +72,10 @@ namespace SampSharp.Entities.SAMP.Commands.Parsers
                 }
             }
 
+            if (bestCandidate == null)
+            {
+                IsInvalidPlayerId = true;
+            }
             result = bestCandidate;
             return bestCandidate != null;
         }
