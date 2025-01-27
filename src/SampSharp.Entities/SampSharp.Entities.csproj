@@ -10,6 +10,9 @@
     <Version>0.10.12</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>
+      - fix: add checker for invalid player ID in parameterized commands
+    </PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
