@@ -2,6 +2,8 @@ name: Release - SampSharp
 
 on:
   push:
+    branches:
+      - build
     tags:
       - '1.*'
 
@@ -47,57 +49,3 @@ jobs:
           name: component-linux
           path: build/artifacts/sampsharp-component/
           if-no-files-found: error
-
-  release:
-    needs: [build-windows, build-linux]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Set VERSION
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Download Windows component
-        uses: actions/download-artifact@v8
-        with:
-          name: component-windows
-          path: ./component-windows
-
-      - name: Download Linux component
-        uses: actions/download-artifact@v8
-        with:
-          name: component-linux
-          path: ./component-linux
-
-      - name: Create release package
-        run: |
-          mkdir -p SampSharp-${{ env.VERSION }}/components
-          cp component-windows/SampSharp.dll SampSharp-${{ env.VERSION }}/components/
-          cp component-windows/SampSharp.pdb SampSharp-${{ env.VERSION }}/components/
-          cp component-linux/SampSharp.so SampSharp-${{ env.VERSION }}/components/SampSharp.so
-          zip -r SampSharp-${{ env.VERSION }}.zip SampSharp-${{ env.VERSION }}/
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: SampSharp ${{ env.VERSION }}
-          draft: true
-          prerelease: ${{ contains(env.VERSION, 'prerelease') || contains(env.VERSION, 'rc') }}
-          files: SampSharp-${{ env.VERSION }}.zip
-
-      - name: Pack NuGet packages
-        run: ./build.sh libraries publish --version="${{ env.VERSION }}"
-
-      - name: Publish to NuGet
-        run: |
-          for pkg in build/artifacts/packages/*.{nupkg,snupkg}; do
-            dotnet nuget push "$pkg" \
-              --source https://api.nuget.org/v3/index.json \
-              --api-key ${{ secrets.NUGET_API_KEY }} \
-              --skip-duplicate
-          done
