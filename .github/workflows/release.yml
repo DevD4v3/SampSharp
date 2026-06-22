@@ -5,29 +5,9 @@ on:
     branches:
       - build
     tags:
-      - '1.*'
+      - 'v*'
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
-
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-
-      - name: Build open.mp component
-        run: .\build.cmd component publish
-
-      - name: Upload Windows component
-        uses: actions/upload-artifact@v7
-        with:
-          name: component-windows
-          path: build/artifacts/sampsharp-component/
-          if-no-files-found: error
-
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -38,14 +18,166 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y gcc g++ cmake
+          sudo apt-get install -y \
+            gcc \
+            g++ \
+            cmake \
+            ninja-build \
+            build-essential
 
-      - name: Build open.mp component
+      #
+      # SampSharp
+      #
+      - name: Build SampSharp
         run: ./build.sh component publish
 
-      - name: Upload Linux component
+      #
+      # omp-streamer-component
+      #
+      - name: Configure Streamer
+        working-directory: external/omp-streamer-component
+        run: |
+          cmake \
+            -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSTREAMER_ARCH=x64
+
+      - name: Build Streamer
+        working-directory: external/omp-streamer-component
+        run: cmake --build build --config Release
+
+      #
+      # SampSharp.OpenMp.Streamer
+      #
+      - name: Configure SampSharp.Streamer
+        working-directory: external/SampSharp.OpenMp.Streamer
+        run: |
+          cmake \
+            -B build \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build SampSharp.Streamer
+        working-directory: external/SampSharp.OpenMp.Streamer
+        run: cmake --build build --config Release
+
+      #
+      # Collect artifacts
+      #
+      - name: Collect artifacts
+        run: |
+          mkdir -p artifacts/components-linux
+
+          cp build/artifacts/sampsharp-component/*.so artifacts/components-linux/ || true
+          cp external/omp-streamer-component/build/bin/streamer.so artifacts/components-linux/ || true
+          cp external/SampSharp.OpenMp.Streamer/build/artifacts/*.so artifacts/components-linux/ || true
+
+          ls -la artifacts/components-linux
+
+      - name: Upload Linux components
         uses: actions/upload-artifact@v7
         with:
-          name: component-linux
-          path: build/artifacts/sampsharp-component/
+          name: components-linux
+          path: artifacts/components-linux/
           if-no-files-found: error
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      #
+      # SampSharp
+      #
+      - name: Build SampSharp
+        run: .\build.cmd component publish
+
+      #
+      # omp-streamer-component
+      #
+      - name: Configure Streamer
+        working-directory: external/omp-streamer-component
+        run: cmake -B build -A x64 -DSTREAMER_ARCH=x64 "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+
+      - name: Build Streamer
+        working-directory: external/omp-streamer-component
+        run: cmake --build build --config Release
+
+      #
+      # SampSharp.OpenMp.Streamer
+      #
+      - name: Configure SampSharp.Streamer
+        working-directory: external/SampSharp.OpenMp.Streamer
+        run: cmake -B build -A x64 "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+
+      - name: Build SampSharp.Streamer
+        working-directory: external/SampSharp.OpenMp.Streamer
+        run: cmake --build build --config Release
+
+      #
+      # Collect artifacts
+      #
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts\components-windows
+
+          Get-ChildItem build\artifacts\sampsharp-component\*.dll -ErrorAction SilentlyContinue |
+            Copy-Item -Destination artifacts\components-windows
+
+          Get-ChildItem external\omp-streamer-component -Recurse -Filter streamer.dll -ErrorAction SilentlyContinue |
+            Copy-Item -Destination artifacts\components-windows
+
+          Get-ChildItem external\SampSharp.OpenMp.Streamer\build\artifacts\*.dll -ErrorAction SilentlyContinue |
+            Copy-Item -Destination artifacts\components-windows
+
+          Get-ChildItem artifacts\components-windows
+
+      - name: Upload Windows components
+        uses: actions/upload-artifact@v7
+        with:
+          name: components-windows
+          path: artifacts/components-windows/
+          if-no-files-found: error
+
+  release:
+    needs:
+      - build-linux
+      - build-windows
+
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: components-linux
+          path: components-linux
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: components-windows
+          path: components-windows
+
+      - name: Create archives
+        run: |
+          tar -cJf components-linux.tar.xz -C components-linux .
+          cd components-windows
+          zip -r ../components-windows.zip .
+
+      - name: Publish release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            components-linux.tar.xz
+            components-windows.zip
