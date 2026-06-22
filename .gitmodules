@@ -2,3 +2,9 @@
 	path = external/sdk
 	url = https://github.com/openmultiplayer/open.mp-sdk
 	branch = master
+[submodule "external/SampSharp.OpenMp.Streamer"]
+	path = external/SampSharp.OpenMp.Streamer
+	url = https://github.com/DevD4v3/SampSharp.OpenMp.Streamer
+[submodule "external/omp-streamer-component"]
+	path = external/omp-streamer-component
+	url = https://github.com/OpenSamp/omp-streamer-component
