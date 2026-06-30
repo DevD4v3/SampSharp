@@ -2,8 +2,6 @@ name: Release - SampSharp
 
 on:
   push:
-    branches:
-      - build
     tags:
       - 'v*'
 
